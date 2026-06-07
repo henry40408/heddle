@@ -3,12 +3,12 @@ Feature: Blob attachments and transclusion
   I want to upload binary files and transclude them like any other note
   So that a diagram or PDF lives in one place but appears wherever I embed it
 
-  # A blob is a transcludable entity, like a note: it has a stable UUIDv7 id,
-  # a unique case-insensitive title (its filename), backlinks, and is embedded
-  # with the same {{Title}} syntax. It differs from a note in that its content
-  # is binary (with a MIME type), it is not edited as text, and it renders
-  # according to its type. Where the bytes are stored is an implementation
-  # detail and intentionally not asserted here.
+  # A blob is a strand whose content is binary. It shares all strand rules
+  # (UUIDv7 id, unique case-insensitive title, backlinks) defined in
+  # strand_common.feature, and is embedded with the same {{Title}} syntax as a
+  # note. It differs from a note in that its content is binary (with a MIME
+  # type), it is not edited as text, and it renders according to its type.
+  # Where the bytes are stored is an implementation detail, not asserted here.
 
   Background:
     Given the Heddle app is running
@@ -17,7 +17,6 @@ Feature: Blob attachments and transclusion
   Scenario: Uploading a file creates a transcludable blob
     When I upload the image "coffee-setup.png"
     Then a blob titled "coffee-setup.png" exists
-    And the blob's id is a valid UUIDv7
     And the blob records its content type "image/png"
 
   Scenario: Transcluding an image renders it inline
@@ -84,16 +83,6 @@ Feature: Blob attachments and transclusion
     And I view the note "Gear"
     Then the embed shows a "missing source: coffee-setup.png" placeholder
     And the placeholder does not claim whether the target was a note or an attachment
-
-  Scenario: Blobs and notes share one title namespace
-    Given a note titled "diagram" with body "x"
-    When I try to upload a file named "diagram"
-    Then the upload is rejected with a "title already exists" error
-
-  Scenario: Title rules apply to blobs too
-    Given an uploaded image "coffee-setup.png"
-    When I try to upload a file named "Coffee-Setup.png"
-    Then the upload is rejected with a "title already exists" error
 
   Scenario: A file at the size limit is accepted
     When I upload a file "big.pdf" of 50 MB
