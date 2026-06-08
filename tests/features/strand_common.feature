@@ -7,6 +7,12 @@ Feature: Strand identity and common rules
   # hold for every strand regardless of type. Notes are created with text;
   # blobs are created by upload; both are strands. Type-specific behaviour
   # lives in note_management.feature and blob_transclusion.feature.
+  #
+  # updated-at starts equal to created-at and moves on ANY persisted change to
+  # the strand -- a note body edit, a title rename, a tag change, a property
+  # change (properties.feature), a blob re-upload, or a task tick
+  # (task_lists.feature). It tracks the strand's state, not just its body, so
+  # metadata edits bump it too. Whether a UI surface sorts by it is separate.
 
   Background:
     Given the Heddle app is running
@@ -23,6 +29,36 @@ Feature: Strand identity and common rules
     Then the strand's created-at timestamp is in UTC
     And the strand's updated-at timestamp is in UTC
     And both timestamps are formatted as RFC 3339 with a "Z" offset
+
+  Scenario: A newly created strand's updated-at equals its created-at
+    When I create a note titled "Coffee Brewing" with body "x"
+    Then the strand's updated-at timestamp equals its created-at timestamp
+
+  Scenario: Editing a note's body bumps its updated-at
+    Given a note titled "Coffee Brewing" with body "first"
+    When I edit the note "Coffee Brewing" and set its body to "second"
+    Then the updated-at timestamp of "Coffee Brewing" is newer than before
+
+  Scenario: Renaming a strand bumps its updated-at
+    Given a note titled "Coffee Brewing" with body "x"
+    When I rename the strand "Coffee Brewing" to "Pour-over Brewing"
+    Then the updated-at timestamp of "Pour-over Brewing" is newer than before
+
+  Scenario: Tagging a strand bumps its updated-at
+    Given a note titled "Coffee Brewing" with body "x"
+    When I tag the strand "Coffee Brewing" with "beverage"
+    Then the updated-at timestamp of "Coffee Brewing" is newer than before
+
+  Scenario: Changing a property bumps the strand's updated-at
+    Given a note titled "Coffee Brewing" with body "x"
+    And the property "status" is defined as text
+    When I set the property "status" of "Coffee Brewing" to "doing"
+    Then the updated-at timestamp of "Coffee Brewing" is newer than before
+
+  Scenario: Re-uploading a blob's content bumps its updated-at
+    Given an uploaded image "coffee-setup.png"
+    When I re-upload the image "coffee-setup.png" with new content
+    Then the updated-at timestamp of "coffee-setup.png" is newer than before
 
   Scenario: Titles are unique across all strands, case-insensitively
     Given a note titled "Coffee Brewing" with body "first"
