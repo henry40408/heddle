@@ -6,8 +6,8 @@ Feature: Structured properties
   # Properties are structured metadata edited through a panel, not written into
   # the note body. They live in the database, so notes and blobs carry them
   # uniformly (a blob has no body to hold frontmatter). The body stays clean
-  # Markdown. A light "L2" schema registry records each property's name and
-  # type; values are validated against that type. Types: text, number,
+  # Markdown. A light schema registry records each property's name and type;
+  # values are validated against that type. Types: text, number,
   # boolean, date, select, multi-select. Property keys share the query
   # namespace with the reserved operators -- an unknown query key is a property
   # lookup (structured_query.feature).

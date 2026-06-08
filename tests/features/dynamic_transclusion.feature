@@ -5,12 +5,12 @@ Feature: Dynamic transclusion
 
   # Static "{{Title}}" embeds one named strand (transclusion.feature). Dynamic
   # transclusion uses triple braces "{{{ query }}}" to embed the *result* of a
-  # query (structured_query.feature). Two rendering tiers:
-  #   Tier A -- "{{{ query }}}" renders a built-in list of matching strands.
-  #   Tier B -- "{{{ query || Template }}}" renders each match through a
-  #             template strand whose body uses "{{.field}}" to interpolate the
-  #             match's own fields (title, tags, properties). ".title" is always
-  #             available; other fields come from properties.feature.
+  # query (structured_query.feature). It renders in one of two ways:
+  #   - A bare "{{{ query }}}" renders a built-in list of the matching strands.
+  #   - "{{{ query || Template }}}" renders each match through a template strand
+  #     whose body uses "{{.field}}" to interpolate the match's own fields
+  #     (title, tags, properties). ".title" is always available; other fields
+  #     come from properties.feature.
   # Like static transclusion the embedded view is read-only and offers
   # go-to-source on each item; it re-resolves whenever its inputs change.
 

@@ -15,9 +15,10 @@ Feature: Editable property cells in views
   # Liquid uses: a chain of value-to-value transforms (e.g. a future "| upcase"
   # or "| date") plus this one behaviour flag. It cannot express control flow --
   # a loop or conditional is not a filter -- so it stays non-Turing-complete and
-  # never becomes the widget/block language (tier C), which would be a separate
-  # decision. Everything without a "| edit" stays read-only, so a dashboard is
-  # editable only exactly where its author intends.
+  # never grows into a full widget/block language with its own control flow and
+  # composable components; that larger step would be a separate decision.
+  # Everything without a "| edit" stays read-only, so a dashboard is editable
+  # only exactly where its author intends.
 
   Background:
     Given the Heddle app is running
