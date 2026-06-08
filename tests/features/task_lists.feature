@@ -6,7 +6,11 @@ Feature: Task lists
   # A task is a Markdown task-list line ("- [ ] text" open, "- [x] text" done)
   # inside any note's body -- not a separate strand and not a structured
   # property. Creating a task costs one line. In the task's own note, ticking
-  # the checkbox writes "[x]" straight back into that line. The engine indexes
+  # the checkbox writes "[x]" straight back into that line. Because that is a
+  # body change, it counts as an edit and bumps the source note's updated-at
+  # (strand_common.feature) -- even when the tick happens from an aggregated
+  # view, where only the source note's timestamp moves, not the dashboard's.
+  # The engine indexes
   # every task line, so "task:open" / "task:done" (structured_query.feature) can
   # gather tasks across notes, and a dynamic embed (dynamic_transclusion.feature)
   # can list them on a dashboard. Ticking a task in such an aggregated view is
@@ -40,6 +44,12 @@ Feature: Task lists
     And I am viewing the note "Groceries"
     When I untick the task "Buy beans"
     Then the body of "Groceries" contains "- [ ] Buy beans"
+
+  Scenario: Ticking a task in its own note bumps the note's updated-at
+    Given a note titled "Groceries" with body "- [ ] Buy beans"
+    And I am viewing the note "Groceries"
+    When I tick the task "Buy beans"
+    Then the updated-at timestamp of "Groceries" is newer than before
 
   Scenario: task:open gathers unfinished tasks across notes
     Given a note titled "Groceries" with body:
@@ -105,3 +115,11 @@ Feature: Task lists
     When I tick the task "Buy beans" in the aggregated list
     Then the body of "Groceries" contains "- [x] Buy beans"
     And the body of "Groceries" contains "- [ ] Buy milk"
+
+  Scenario: Ticking an aggregated task bumps only the source note's updated-at
+    Given a note titled "Groceries" with body "- [ ] Buy beans"
+    And a note titled "Today" with body "{{{ task:open }}}"
+    And I am viewing the note "Today"
+    When I tick the task "Buy beans" in the aggregated list
+    Then the updated-at timestamp of "Groceries" is newer than before
+    And the updated-at timestamp of "Today" is unchanged
