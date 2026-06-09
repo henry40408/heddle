@@ -77,7 +77,7 @@ Feature: Action buttons
     And a note titled "Tools" with body:
       """
       {% button "Make" %}
-        create note title={{ "Source".body }} body="x"
+        create note title={{ strands["Source"].body }} body="x"
       {% endbutton %}
       """
     And I am viewing the note "Tools"

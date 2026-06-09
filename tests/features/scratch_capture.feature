@@ -5,7 +5,7 @@ Feature: Scratch capture with autosave
 
   # A "scratch" strand is an ordinary note (note_management.feature) used as a
   # draft buffer. Two pieces make a capture tool:
-  #   - "{{ <strand>.body | edit: multiline, autosave }}" binds a multiline
+  #   - "{{ strands["Title"].body | edit: multiline, autosave }}" binds a multiline
   #     editor to a named strand's body. Unlike the deliberate save/cancel editor
   #     (editing.feature), an "autosave" binding persists by itself -- after a
   #     short idle pause, on blur, and when the page is closed -- so a draft
@@ -17,6 +17,9 @@ Feature: Scratch capture with autosave
   #     do not update live while typing -- they re-resolve when next viewed.
   # The scratch strand is a normal, searchable strand. "{% capture_form
   # scratch=<title> %}" binds the name "scratch" to that strand for the form.
+  # Two Heddle-provided constructs appear here: the "strands["Title"]" drop reaches
+  # a named strand, and "rest" is a filter returning all array items after the
+  # first (Liquid has first/last but no tail), as in "split: "\n" | rest | join".
 
   Background:
     Given the Heddle app is running
@@ -26,7 +29,7 @@ Feature: Scratch capture with autosave
     Given a note titled "QuickNote" with body "earlier draft"
     And a note titled "Capture" with body:
       """
-      {{ "QuickNote".body | edit: multiline, autosave }}
+      {{ strands["QuickNote"].body | edit: multiline, autosave }}
       """
     When I view the note "Capture"
     Then the scratch editor is prefilled with "earlier draft"
@@ -49,7 +52,7 @@ Feature: Scratch capture with autosave
     Given a note titled "QuickNote" with body ""
     And a note titled "Capture" with body:
       """
-      {{ "QuickNote".body | edit: multiline, autosave }}
+      {{ strands["QuickNote"].body | edit: multiline, autosave }}
       """
     And I am viewing the note "Capture"
     When I type "buy beans" into the scratch editor
@@ -61,7 +64,7 @@ Feature: Scratch capture with autosave
     Given a note titled "QuickNote" with body ""
     And a note titled "Capture" with body:
       """
-      {{ "QuickNote".body | edit: multiline, autosave }}
+      {{ strands["QuickNote"].body | edit: multiline, autosave }}
       """
     And I am viewing the note "Capture"
     When I type "half a thought" into the scratch editor
@@ -72,7 +75,7 @@ Feature: Scratch capture with autosave
     Given no note titled "QuickNote" exists
     And a note titled "Capture" with body:
       """
-      {{ "QuickNote".body | edit: multiline, autosave }}
+      {{ strands["QuickNote"].body | edit: multiline, autosave }}
       """
     And I am viewing the note "Capture"
     When I type "first thought" into the scratch editor
@@ -93,9 +96,9 @@ Feature: Scratch capture with autosave
         {{ scratch.body | edit: multiline, autosave }}
         {% button "Send to inbox" %}
           create note
-            title = {{ scratch.body | lines | first }}
+            title = {{ scratch.body | split: "\n" | first }}
             tags  = "inbox"
-            body  = {{ scratch.body | lines | drop: 1 | join: "\n" }}
+            body  = {{ scratch.body | split: "\n" | rest | join: "\n" }}
           set scratch.body = ""
         {% endbutton %}
       {% endcapture_form %}
@@ -123,9 +126,9 @@ Feature: Scratch capture with autosave
         {{ scratch.body | edit: multiline, autosave }}
         {% button "Send to inbox" %}
           create note
-            title = {{ scratch.body | lines | first }}
+            title = {{ scratch.body | split: "\n" | first }}
             tags  = "inbox"
-            body  = {{ scratch.body | lines | drop: 1 | join: "\n" }}
+            body  = {{ scratch.body | split: "\n" | rest | join: "\n" }}
           set scratch.body = ""
         {% endbutton %}
       {% endcapture_form %}
