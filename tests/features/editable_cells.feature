@@ -30,7 +30,7 @@ Feature: Editable property cells in views
   Scenario: A marked cell renders an editable editor of the property's type
     Given a note titled "Coffee Brewing" with property "stage" set to "doing" tagged "coffee"
     And a note titled "Row" with body "{{ it.title }} - {{ it.stage | edit }}"
-    And a note titled "Board" with body "{% embed "tag:coffee" template="Row" %}"
+    And a note titled "Board" with body "{% query "tag:coffee" template="Row" %}"
     When I view the note "Board"
     Then the "stage" cell for "Coffee Brewing" is an editable dropdown
     And that dropdown's current value is "doing"
@@ -38,14 +38,14 @@ Feature: Editable property cells in views
   Scenario: An editable select cell offers exactly the property's options
     Given a note titled "Coffee Brewing" with property "stage" set to "doing" tagged "coffee"
     And a note titled "Row" with body "{{ it.title }} - {{ it.stage | edit }}"
-    And a note titled "Board" with body "{% embed "tag:coffee" template="Row" %}"
+    And a note titled "Board" with body "{% query "tag:coffee" template="Row" %}"
     When I view the note "Board"
     Then the "stage" cell for "Coffee Brewing" offers only "todo", "doing" and "done"
 
   Scenario: Editing a cell writes back to its source strand
     Given a note titled "Coffee Brewing" with property "stage" set to "doing" tagged "coffee"
     And a note titled "Row" with body "{{ it.title }} - {{ it.stage | edit }}"
-    And a note titled "Board" with body "{% embed "tag:coffee" template="Row" %}"
+    And a note titled "Board" with body "{% query "tag:coffee" template="Row" %}"
     And I am viewing the note "Board"
     When I set the "stage" cell for "Coffee Brewing" to "done"
     Then the strand "Coffee Brewing" has property "stage" equal to "done"
@@ -54,7 +54,7 @@ Feature: Editable property cells in views
     Given a note titled "Coffee Brewing" with property "stage" set to "doing" tagged "coffee"
     And the note "Coffee Brewing" has property "roast" set to "light"
     And a note titled "Row" with body "{{ it.roast }} - {{ it.stage | edit }}"
-    And a note titled "Board" with body "{% embed "tag:coffee" template="Row" %}"
+    And a note titled "Board" with body "{% query "tag:coffee" template="Row" %}"
     When I view the note "Board"
     Then the "roast" cell for "Coffee Brewing" is read-only text showing "light"
     And the "stage" cell for "Coffee Brewing" is an editable dropdown
@@ -62,7 +62,7 @@ Feature: Editable property cells in views
   Scenario: A marked boolean cell renders an editable checkbox
     Given a note titled "Buy Beans" with property "done" set to "false" tagged "todo"
     And a note titled "Row" with body "{{ it.title }} {{ it.done | edit }}"
-    And a note titled "Board" with body "{% embed "tag:todo" template="Row" %}"
+    And a note titled "Board" with body "{% query "tag:todo" template="Row" %}"
     And I am viewing the note "Board"
     When I tick the "done" cell for "Buy Beans"
     Then the strand "Buy Beans" has property "done" equal to true
@@ -71,7 +71,7 @@ Feature: Editable property cells in views
     Given a note titled "Coffee Brewing" with property "stage" set to "doing" tagged "coffee"
     And a note titled "Aeropress Test" with property "stage" set to "doing" tagged "coffee"
     And a note titled "Row" with body "{{ it.title }} - {{ it.stage | edit }}"
-    And a note titled "Board" with body "{% embed "tag:coffee" template="Row" %}"
+    And a note titled "Board" with body "{% query "tag:coffee" template="Row" %}"
     And I am viewing the note "Board"
     When I set the "stage" cell for "Coffee Brewing" to "done"
     Then the strand "Coffee Brewing" has property "stage" equal to "done"
@@ -80,7 +80,7 @@ Feature: Editable property cells in views
   Scenario: The row's literal template text is never editable
     Given a note titled "Coffee Brewing" with property "stage" set to "doing" tagged "coffee"
     And a note titled "Row" with body "Status: {{ it.stage | edit }}"
-    And a note titled "Board" with body "{% embed "tag:coffee" template="Row" %}"
+    And a note titled "Board" with body "{% query "tag:coffee" template="Row" %}"
     When I view the note "Board"
     Then the literal text "Status:" offers no editing
     And only the "stage" cell is interactive

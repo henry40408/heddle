@@ -4,10 +4,10 @@ Feature: Dynamic transclusion
   So that a note can show an always-current list assembled from many strands
 
   # Static "![[Title]]" embeds one named strand (transclusion.feature). Dynamic
-  # transclusion uses the "{% embed %}" tag to embed the *result* of a query
+  # transclusion uses the "{% query %}" tag to embed the *result* of a query
   # (structured_query.feature). It renders in one of two ways:
-  #   - A bare "{% embed "query" %}" renders a built-in list of the matching strands.
-  #   - "{% embed "query" template="T" %}" renders each match through a template
+  #   - A bare "{% query "<query>" %}" renders a built-in list of the matching strands.
+  #   - "{% query "<query>" template="T" %}" renders each match through a template
   #     strand whose body uses "{{ it.field }}" to interpolate the match's own
   #     fields (title, tags, properties) -- "it" is the current match, so
   #     "it.title" is always available; other fields come from properties.feature.
@@ -24,27 +24,27 @@ Feature: Dynamic transclusion
       | Garden Log     | x    | garden |
 
   Scenario: A query embed renders a live list of matches
-    Given a note titled "Coffee Index" with body "{% embed "tag:coffee" %}"
+    Given a note titled "Coffee Index" with body "{% query "tag:coffee" %}"
     When I view the note "Coffee Index"
     Then the rendered output lists "Coffee Brewing"
     And the rendered output lists "Pour Over"
     And the rendered output does not list "Garden Log"
 
   Scenario: The list updates when a new matching strand appears
-    Given a note titled "Coffee Index" with body "{% embed "tag:coffee" %}"
+    Given a note titled "Coffee Index" with body "{% query "tag:coffee" %}"
     And I have viewed the note "Coffee Index"
     When I create a note titled "Aeropress" with body "x" tagged "coffee"
     And I view the note "Coffee Index"
     Then the rendered output lists "Aeropress"
 
   Scenario: An empty result shows an empty-state, not an error
-    Given a note titled "Empty Index" with body "{% embed "tag:nonexistent" %}"
+    Given a note titled "Empty Index" with body "{% query "tag:nonexistent" %}"
     When I view the note "Empty Index"
     Then the rendered output shows an empty-result placeholder
     And the page does not show an error
 
   Scenario: Each listed item is read-only and offers go-to-source
-    Given a note titled "Coffee Index" with body "{% embed "tag:coffee" %}"
+    Given a note titled "Coffee Index" with body "{% query "tag:coffee" %}"
     When I view the note "Coffee Index"
     Then the listed item "Coffee Brewing" offers no inline editing
     And it offers a "go to source" action that opens the note "Coffee Brewing"
@@ -55,7 +55,7 @@ Feature: Dynamic transclusion
       ## {{ it.title }}
       tagged: {{ it.tags }}
       """
-    And a note titled "Coffee Cards" with body "{% embed "tag:coffee" template="Card" %}"
+    And a note titled "Coffee Cards" with body "{% query "tag:coffee" template="Card" %}"
     When I view the note "Coffee Cards"
     Then the rendered output contains "## Coffee Brewing"
     And the rendered output contains "## Pour Over"
@@ -65,17 +65,17 @@ Feature: Dynamic transclusion
     Given the property "roast" is defined as text
     And the note "Coffee Brewing" has property "roast" set to "light"
     And a note titled "Row" with body "{{ it.title }}: {{ it.roast }}"
-    And a note titled "Roast Table" with body "{% embed "tag:coffee" template="Row" %}"
+    And a note titled "Roast Table" with body "{% query "tag:coffee" template="Row" %}"
     When I view the note "Roast Table"
     Then the rendered output contains "Coffee Brewing: light"
 
   Scenario: A missing template strand shows a generic placeholder
-    Given a note titled "Coffee Cards" with body "{% embed "tag:coffee" template="Ghost Template" %}"
+    Given a note titled "Coffee Cards" with body "{% query "tag:coffee" template="Ghost Template" %}"
     When I view the note "Coffee Cards"
     Then the embed shows a "missing source: Ghost Template" placeholder
 
   Scenario: A malformed embedded query shows a placeholder, not a crash
-    Given a note titled "Broken Index" with body "{% embed "tag:" %}"
+    Given a note titled "Broken Index" with body "{% query "tag:" %}"
     When I view the note "Broken Index"
     Then the embed shows a "missing value for tag" placeholder
     And the page does not hang
@@ -87,7 +87,7 @@ Feature: Dynamic transclusion
 
   Scenario: Renaming a template strand keeps the dynamic embed rendering through it
     Given a note titled "Row" with body "{{ it.title }}"
-    And a note titled "Coffee Cards" with body "{% embed "tag:coffee" template="Row" %}"
+    And a note titled "Coffee Cards" with body "{% query "tag:coffee" template="Row" %}"
     When I rename the note "Row" to "Card"
     And I view the note "Coffee Cards"
     Then the rendered output lists "Coffee Brewing"

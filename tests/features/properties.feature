@@ -97,7 +97,7 @@ Feature: Structured properties
     Given the property "stage" is defined as select with options "todo, doing, done"
     And the note "Coffee Brewing" has property "stage" set to "doing"
     And a note titled "Row" with body "{{ it.title }}: {{ it.stage }}"
-    And a note titled "Board" with body "{% embed "stage:doing" template="Row" %}"
+    And a note titled "Board" with body "{% query "stage:doing" template="Row" %}"
     When I view the note "Board"
     Then the rendered output contains "Coffee Brewing: doing"
     And the template view offers no editor for "stage"
