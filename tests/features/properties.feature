@@ -16,8 +16,8 @@ Feature: Structured properties
   # for boolean, a dropdown for select, a number input for number, a date
   # picker for date -- so there is no widget syntax in the body. In template and
   # dynamic views (dynamic_transclusion.feature) a property is shown read-only
-  # via "{{.field}}"; to change it you edit the source strand's panel, or mark
-  # the cell editable with "{{.field | edit}}" (editable_cells.feature).
+  # via "{{ it.field }}"; to change it you edit the source strand's panel, or mark
+  # the cell editable with "{{ it.field | edit }}" (editable_cells.feature).
 
   Background:
     Given the Heddle app is running
@@ -96,8 +96,8 @@ Feature: Structured properties
   Scenario: A property is read-only in a template view
     Given the property "stage" is defined as select with options "todo, doing, done"
     And the note "Coffee Brewing" has property "stage" set to "doing"
-    And a note titled "Row" with body "{{.title}}: {{.stage}}"
-    And a note titled "Board" with body "{{{ stage:doing || Row }}}"
+    And a note titled "Row" with body "{{ it.title }}: {{ it.stage }}"
+    And a note titled "Board" with body "{% embed "stage:doing" template="Row" %}"
     When I view the note "Board"
     Then the rendered output contains "Coffee Brewing: doing"
     And the template view offers no editor for "stage"
