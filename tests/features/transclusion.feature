@@ -69,3 +69,25 @@ Feature: Note-level transclusion
     And the rendered output contains "middle"
     And the second occurrence of "A" in the cycle shows a "cycle detected" placeholder
     And the page does not hang
+
+  # Transclusion addresses its source BY TITLE, so renaming a source could orphan
+  # every "{{Title}}" that embeds it. Wiki links already guarantee survival across
+  # a rename (wiki_links_and_backlinks.feature); transclusion must match.
+  # OPEN DECISION (mechanism only -- recorded here, not yet chosen):
+  #   (A) relink: rewrite "{{Old}}" to "{{New}}" in every embedder's body, so the
+  #       raw body shows the new title in edit mode; or
+  #   (B) id-addressed references: "{{Title}}" is display sugar over a stable id,
+  #       so the raw body is never touched and nothing needs rewriting.
+  # The scenario below asserts only the user-visible guarantee (the embed stays
+  # resolved and follows the new title), which holds under either (A) or (B); the
+  # raw-body behaviour is deliberately left unspecified until the choice is made.
+
+  Scenario: Renaming a transcluded source keeps every embedding resolved
+    Given a note titled "Brew Params" with body "Ratio 1:16."
+    And a note titled "Coffee Brewing" with body "{{Brew Params}}"
+    And a note titled "Cafe Log" with body "{{Brew Params}}"
+    When I rename the note "Brew Params" to "Pour-over Params"
+    Then viewing the note "Coffee Brewing" contains "Ratio 1:16."
+    And viewing the note "Cafe Log" contains "Ratio 1:16."
+    And the embed in "Coffee Brewing" shows no "missing source" placeholder
+    And the transcluded content is marked as coming from "Pour-over Params"
