@@ -83,7 +83,7 @@ Feature: Task lists
   Scenario: A dashboard embeds open tasks gathered from the whole web
     Given a note titled "Groceries" with body "- [ ] Buy beans"
     And a note titled "Errands" with body "- [ ] Mail package"
-    And a note titled "Today" with body "{% embed "task:open" %}"
+    And a note titled "Today" with body "{% query "task:open" %}"
     When I view the note "Today"
     Then the rendered output lists "Buy beans"
     And the rendered output lists "Mail package"
@@ -91,7 +91,7 @@ Feature: Task lists
 
   Scenario: Ticking a task in an aggregated view writes back to its source line
     Given a note titled "Groceries" with body "- [ ] Buy beans"
-    And a note titled "Today" with body "{% embed "task:open" %}"
+    And a note titled "Today" with body "{% query "task:open" %}"
     And I am viewing the note "Today"
     When I tick the task "Buy beans" in the aggregated list
     Then the body of "Groceries" contains "- [x] Buy beans"
@@ -99,7 +99,7 @@ Feature: Task lists
 
   Scenario: An aggregated task is read-only apart from its checkbox
     Given a note titled "Groceries" with body "- [ ] Buy beans"
-    And a note titled "Today" with body "{% embed "task:open" %}"
+    And a note titled "Today" with body "{% query "task:open" %}"
     When I view the note "Today"
     Then the aggregated task "Buy beans" offers no inline text editing
     And only its checkbox is interactive
@@ -110,7 +110,7 @@ Feature: Task lists
       - [ ] Buy beans
       - [ ] Buy milk
       """
-    And a note titled "Today" with body "{% embed "task:open" %}"
+    And a note titled "Today" with body "{% query "task:open" %}"
     And I am viewing the note "Today"
     When I tick the task "Buy beans" in the aggregated list
     Then the body of "Groceries" contains "- [x] Buy beans"
@@ -118,7 +118,7 @@ Feature: Task lists
 
   Scenario: Ticking an aggregated task bumps only the source note's updated-at
     Given a note titled "Groceries" with body "- [ ] Buy beans"
-    And a note titled "Today" with body "{% embed "task:open" %}"
+    And a note titled "Today" with body "{% query "task:open" %}"
     And I am viewing the note "Today"
     When I tick the task "Buy beans" in the aggregated list
     Then the updated-at timestamp of "Groceries" is newer than before

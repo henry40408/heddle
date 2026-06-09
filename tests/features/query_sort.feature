@@ -1,16 +1,16 @@
-Feature: Ordering a dynamic embed with sort
+Feature: Ordering a dynamic query with sort
   As a user assembling a dashboard from a query
   I want to control the order of the matched strands
   So that a list reads top-to-bottom the way I expect, not in arbitrary order
 
-  # A bare "{% embed "query" %}" (dynamic_transclusion.feature) lists matches in
+  # A bare "{% query "<query>" %}" (dynamic_transclusion.feature) lists matches in
   # an unspecified order, which makes any board or "latest N" view unusable. The
   # "sort" operator fixes the order. It is a PIPELINE operator that lives INSIDE
-  # the query string, not an attribute on the embed tag: ordering is therefore
+  # the query string, not an attribute on the query tag: ordering is therefore
   # expressed in exactly one place (the query AST, structured_query.feature), and
-  # "{% embed %}" stays a thin wrapper. So:
-  #     {% embed "tag:coffee sort:title" %}        -- filter, then order by title
-  #     {% embed "tag:coffee sort:-rating" %}      -- filter, then order by rating, descending
+  # "{% query %}" stays a thin wrapper. So:
+  #     {% query "tag:coffee sort:title" %}        -- filter, then order by title
+  #     {% query "tag:coffee sort:-rating" %}      -- filter, then order by rating, descending
   #
   # Direction: "sort:key" is ascending; a leading "-" ON THE VALUE
   # ("sort:-key") is descending. This minus sits on the value and reverses the
@@ -44,12 +44,12 @@ Feature: Ordering a dynamic embed with sort
       | Pour Over      | x    | coffee |
 
   Scenario: Sorting by title orders matches case-insensitively ascending
-    Given a note titled "Coffee Index" with body "{% embed "tag:coffee sort:title" %}"
+    Given a note titled "Coffee Index" with body "{% query "tag:coffee sort:title" %}"
     When I view the note "Coffee Index"
     Then the rendered list order is "Aeropress Test", "Coffee Brewing", "Pour Over"
 
   Scenario: A leading minus on the value sorts descending
-    Given a note titled "Coffee Index" with body "{% embed "tag:coffee sort:-title" %}"
+    Given a note titled "Coffee Index" with body "{% query "tag:coffee sort:-title" %}"
     When I view the note "Coffee Index"
     Then the rendered list order is "Pour Over", "Coffee Brewing", "Aeropress Test"
 
@@ -57,7 +57,7 @@ Feature: Ordering a dynamic embed with sort
     Given the note "Coffee Brewing" has property "rating" set to "2"
     And the note "Aeropress Test" has property "rating" set to "10"
     And the note "Pour Over" has property "rating" set to "5"
-    And a note titled "Rating Board" with body "{% embed "tag:coffee sort:rating" %}"
+    And a note titled "Rating Board" with body "{% query "tag:coffee sort:rating" %}"
     When I view the note "Rating Board"
     Then the rendered list order is "Coffee Brewing", "Pour Over", "Aeropress Test"
 
@@ -65,7 +65,7 @@ Feature: Ordering a dynamic embed with sort
     Given the note "Coffee Brewing" has property "due" set to "2026-06-30"
     And the note "Aeropress Test" has property "due" set to "2026-01-05"
     And the note "Pour Over" has property "due" set to "2026-03-12"
-    And a note titled "Due Board" with body "{% embed "tag:coffee sort:due" %}"
+    And a note titled "Due Board" with body "{% query "tag:coffee sort:due" %}"
     When I view the note "Due Board"
     Then the rendered list order is "Aeropress Test", "Pour Over", "Coffee Brewing"
 
@@ -73,14 +73,14 @@ Feature: Ordering a dynamic embed with sort
     Given the note "Coffee Brewing" has property "rating" set to "5"
     And the note "Pour Over" has property "rating" set to "5"
     And the note "Aeropress Test" has property "rating" set to "5"
-    And a note titled "Rating Board" with body "{% embed "tag:coffee sort:rating" %}"
+    And a note titled "Rating Board" with body "{% query "tag:coffee sort:rating" %}"
     When I view the note "Rating Board"
     Then the rendered list order is "Aeropress Test", "Coffee Brewing", "Pour Over"
 
   Scenario: Strands missing the sort key sort after those that have it
     Given the note "Coffee Brewing" has property "rating" set to "5"
     And the note "Pour Over" has property "rating" set to "1"
-    And a note titled "Rating Board" with body "{% embed "tag:coffee sort:rating" %}"
+    And a note titled "Rating Board" with body "{% query "tag:coffee sort:rating" %}"
     When I view the note "Rating Board"
     Then the rendered list order is "Pour Over", "Coffee Brewing", "Aeropress Test"
 
@@ -89,19 +89,19 @@ Feature: Ordering a dynamic embed with sort
     And the note "Aeropress Test" has property "rating" set to "10"
     And the note "Pour Over" has property "rating" set to "5"
     And a note titled "Row" with body "{{ it.title }} ({{ it.rating }})"
-    And a note titled "Rating Board" with body "{% embed "tag:coffee sort:-rating" template="Row" %}"
+    And a note titled "Rating Board" with body "{% query "tag:coffee sort:-rating" template="Row" %}"
     When I view the note "Rating Board"
     Then the rendered output contains "Aeropress Test (10)" before "Pour Over (5)"
     And the rendered output contains "Pour Over (5)" before "Coffee Brewing (2)"
 
   Scenario: Sorting an empty result shows the empty-state, not an error
-    Given a note titled "Empty Index" with body "{% embed "tag:nonexistent sort:title" %}"
+    Given a note titled "Empty Index" with body "{% query "tag:nonexistent sort:title" %}"
     When I view the note "Empty Index"
     Then the rendered output shows an empty-result placeholder
     And the page does not show an error
 
   Scenario: Sort with no key reports a friendly error
-    Given a note titled "Broken Index" with body "{% embed "tag:coffee sort:" %}"
+    Given a note titled "Broken Index" with body "{% query "tag:coffee sort:" %}"
     When I view the note "Broken Index"
     Then the embed shows a "missing value for sort" placeholder
     And the page does not hang
