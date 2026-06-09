@@ -1,4 +1,4 @@
-Feature: Ordering a dynamic embed with sort
+Feature: Ordering a dynamic query with sort
   As a user assembling a dashboard from a query
   I want to control the order of the matched strands
   So that a list reads top-to-bottom the way I expect, not in arbitrary order
