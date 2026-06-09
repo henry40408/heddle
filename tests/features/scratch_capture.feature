@@ -95,11 +95,10 @@ Feature: Scratch capture with autosave
       {% capture_form scratch="QuickNote" %}
         {{ scratch.body | edit: multiline, autosave }}
         {% button "Send to inbox" %}
-          create note
-            title = {{ scratch.body | split: "\n" | first }}
-            tags  = "inbox"
-            body  = {{ scratch.body | split: "\n" | rest | join: "\n" }}
-          set scratch.body = ""
+          create {{ scratch.body | split: "\n" | first }}
+            tags=["inbox"]
+            body={{ scratch.body | split: "\n" | rest | join: "\n" }}
+          set scratch body=""
         {% endbutton %}
       {% endcapture_form %}
       """
@@ -125,11 +124,10 @@ Feature: Scratch capture with autosave
       {% capture_form scratch="QuickNote" %}
         {{ scratch.body | edit: multiline, autosave }}
         {% button "Send to inbox" %}
-          create note
-            title = {{ scratch.body | split: "\n" | first }}
-            tags  = "inbox"
-            body  = {{ scratch.body | split: "\n" | rest | join: "\n" }}
-          set scratch.body = ""
+          create {{ scratch.body | split: "\n" | first }}
+            tags=["inbox"]
+            body={{ scratch.body | split: "\n" | rest | join: "\n" }}
+          set scratch body=""
         {% endbutton %}
       {% endcapture_form %}
       """

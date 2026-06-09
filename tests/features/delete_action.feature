@@ -3,7 +3,7 @@ Feature: The delete action verb
   I want a button that can remove a strand
   So that I can file-and-clear -- archive a draft, clear an inbox item -- without opening it
 
-  # "delete" is a third action verb alongside "create" and "set"
+  # "delete" is a third action verb alongside "create " and "set"
   # (action_buttons.feature). It obeys every rule that feature already pins:
   #   - It runs ONLY on an explicit click; merely viewing a button that contains
   #     a delete never removes anything (viewing stays safe and idempotent).
@@ -104,7 +104,7 @@ Feature: The delete action verb
       """
       {% button "File it" %}
         delete "Keep"
-        create note title="" body="x"
+        create "" body="x"
       {% endbutton %}
       """
     And I am viewing the note "Tools"
@@ -119,7 +119,7 @@ Feature: The delete action verb
     And a note titled "Tools" with body:
       """
       {% button "File it" %}
-        create note title="Inbox Item" body={{ strands["QuickNote"].body }}
+        create "Inbox Item" body={{ strands["QuickNote"].body }}
         delete "QuickNote"
       {% endbutton %}
       """

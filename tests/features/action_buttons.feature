@@ -7,16 +7,22 @@ Feature: Action buttons
   # dynamic_transclusion.feature), with one narrow exception for editable
   # property cells (editable_cells.feature). An action button is the one place a
   # template may *write*. It stays deliberately bounded:
-  #   - A fixed, small verb set -- "create" and "set" -- listed in order. The
-  #     list is NOT control flow: no loops, no conditionals. Argument values come
-  #     from ordinary "{{ ... }}" interpolation, evaluated when the button is
-  #     pressed (so they see the current state, not the render-time state).
+  #   - A fixed, small verb set -- "create ", "set", "delete"
+  #     (delete_action.feature) -- listed in order. The list is NOT control flow:
+  #     no loops, no conditionals. Each action is "verb <target> key=value ...":
+  #     one POSITIONAL target naming the strand acted on (a quoted "Title", a
+  #     "{{ ... }}" interpolation, or a capture_form-bound alias like "scratch"),
+  #     followed by zero or more KEYWORD arguments. Values are quoted strings,
+  #     "{{ ... }}" interpolations (evaluated when the button is pressed, so they
+  #     see current state, not render-time state), or "[...]" list literals for a
+  #     multi-valued field such as tags or a multi-select property. "create "
+  #     makes a note; "set" writes fields of the target; "delete" removes it.
   #   - Writes happen ONLY on an explicit user click. Merely viewing a note that
   #     contains a button never mutates anything -- viewing stays safe and
   #     idempotent, like every other rendered view.
   #   - A button's actions run as a single all-or-nothing transaction. If any
   #     action fails, none are applied, so a later "set"/clear can never destroy
-  #     data after an earlier "create" has already failed.
+  #     data after an earlier "create " has already failed.
   # Like editable_cells, a note is writable only exactly where its author placed
   # a button; everything else stays read-only.
 
@@ -28,7 +34,7 @@ Feature: Action buttons
     Given a note titled "Tools" with body:
       """
       {% button "Make note" %}
-        create note title="Generated" body="hello"
+        create "Generated" body="hello"
       {% endbutton %}
       """
     When I view the note "Tools"
@@ -38,7 +44,7 @@ Feature: Action buttons
     Given a note titled "Tools" with body:
       """
       {% button "Make note" %}
-        create note title="Generated" body="hello"
+        create "Generated" body="hello"
       {% endbutton %}
       """
     And I am viewing the note "Tools"
@@ -51,7 +57,7 @@ Feature: Action buttons
     And a note titled "Tools" with body:
       """
       {% button "Overwrite" %}
-        set "Coffee Brewing".body = "new"
+        set "Coffee Brewing" body="new"
       {% endbutton %}
       """
     And I am viewing the note "Tools"
@@ -63,8 +69,8 @@ Feature: Action buttons
     And a note titled "Tools" with body:
       """
       {% button "Run" %}
-        set "Log".body = "first"
-        set "Log".body = "second"
+        set "Log" body="first"
+        set "Log" body="second"
       {% endbutton %}
       """
     And I am viewing the note "Tools"
@@ -77,7 +83,7 @@ Feature: Action buttons
     And a note titled "Tools" with body:
       """
       {% button "Make" %}
-        create note title={{ strands["Source"].body }} body="x"
+        create {{ strands["Source"].body }} body="x"
       {% endbutton %}
       """
     And I am viewing the note "Tools"
@@ -93,8 +99,8 @@ Feature: Action buttons
     And a note titled "Tools" with body:
       """
       {% button "File it" %}
-        create note title="" body="x"
-        set "Draft".body = ""
+        create "" body="x"
+        set "Draft" body=""
       {% endbutton %}
       """
     And I am viewing the note "Tools"
@@ -109,10 +115,26 @@ Feature: Action buttons
     And a note titled "Tools" with body:
       """
       {% button "Add" %}
-        create note title="Inbox Item" body="second"
+        create "Inbox Item" body="second"
       {% endbutton %}
       """
     And I am viewing the note "Tools"
     When I click the button "Add"
     Then the strand "Inbox Item" has body "first"
     And a second strand with a title derived from "Inbox Item" has body "second"
+
+  Scenario: A set action writes several values to a multi-valued field with a list literal
+    # A "[...]" list literal sets a multi-valued field unambiguously, so there is
+    # never a question of whether a comma inside a single quoted value is a
+    # separator -- only the list brackets group multiple values.
+    Given the property "moods" is defined as multi-select with options "bright, bold, sweet"
+    And a note titled "Coffee Brewing" with body "x"
+    And a note titled "Tools" with body:
+      """
+      {% button "Tag moods" %}
+        set "Coffee Brewing" moods=["bright", "sweet"]
+      {% endbutton %}
+      """
+    And I am viewing the note "Tools"
+    When I click the button "Tag moods"
+    Then the strand "Coffee Brewing" has property "moods" containing "bright" and "sweet"
