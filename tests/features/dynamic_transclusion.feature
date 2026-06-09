@@ -79,3 +79,17 @@ Feature: Dynamic transclusion
     When I view the note "Broken Index"
     Then the embed shows a "missing value for tag" placeholder
     And the page does not hang
+
+  # The template after "||" is also addressed BY TITLE, so renaming it raises the
+  # same orphaning question as static transclusion. See transclusion.feature for
+  # the (A) relink vs (B) id-addressed decision; the guarantee asserted here is
+  # mechanism-independent -- the embed stays resolved and follows the new title.
+
+  Scenario: Renaming a template strand keeps the dynamic embed rendering through it
+    Given a note titled "Row" with body "{{.title}}"
+    And a note titled "Coffee Cards" with body "{{{ tag:coffee || Row }}}"
+    When I rename the note "Row" to "Card"
+    And I view the note "Coffee Cards"
+    Then the rendered output lists "Coffee Brewing"
+    And the rendered output lists "Pour Over"
+    And the embed shows no "missing source" placeholder
