@@ -80,10 +80,11 @@ Feature: Dynamic transclusion
     Then the embed shows a "missing value for tag" placeholder
     And the page does not hang
 
-  # The template after "||" is also addressed BY TITLE, so renaming it raises the
-  # same orphaning question as static transclusion. See transclusion.feature for
-  # the (A) relink vs (B) id-addressed decision; the guarantee asserted here is
-  # mechanism-independent -- the embed stays resolved and follows the new title.
+  # The "template="Name"" of a query is also addressed BY TITLE, so renaming it
+  # raises the same orphaning question as static transclusion. The mechanism is
+  # (A) relink by parse-then-rewrite; see relink.feature. The guarantee asserted
+  # here is mechanism-independent -- the embed stays resolved and follows the new
+  # title; relink.feature adds the raw-body rewrite of "template="Name"".
 
   Scenario: Renaming a template strand keeps the dynamic embed rendering through it
     Given a note titled "Row" with body "{{ it.title }}"

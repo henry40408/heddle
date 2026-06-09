@@ -73,14 +73,12 @@ Feature: Note-level transclusion
   # Transclusion addresses its source BY TITLE, so renaming a source could orphan
   # every "![[Title]]" that embeds it. Wiki links already guarantee survival across
   # a rename (wiki_links_and_backlinks.feature); transclusion must match.
-  # OPEN DECISION (mechanism only -- recorded here, not yet chosen):
-  #   (A) relink: rewrite "![[Old]]" to "![[New]]" in every embedder's body, so the
-  #       raw body shows the new title in edit mode; or
-  #   (B) id-addressed references: "![[Title]]" is display sugar over a stable id,
-  #       so the raw body is never touched and nothing needs rewriting.
-  # The scenario below asserts only the user-visible guarantee (the embed stays
-  # resolved and follows the new title), which holds under either (A) or (B); the
-  # raw-body behaviour is deliberately left unspecified until the choice is made.
+  # MECHANISM (now chosen): (A) relink by parse-then-rewrite -- the embedder's raw
+  # body is rewritten "![[Old]]" -> "![[New]]", so edit mode shows the new title.
+  # See relink.feature for the raw-body assertions and the parse-not-regex safety
+  # rules. The scenario below asserts the mechanism-independent guarantee (the embed
+  # stays resolved and follows the new title); relink.feature adds the (A)-specific
+  # raw-body behaviour.
 
   Scenario: Renaming a transcluded source keeps every embedding resolved
     Given a note titled "Brew Params" with body "Ratio 1:16."
