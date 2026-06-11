@@ -12,10 +12,17 @@ Feature: Action buttons
   #     no loops, no conditionals. Each action is "verb <target> key=value ...":
   #     one POSITIONAL target naming the strand acted on (a quoted "Title", a
   #     "{{ ... }}" interpolation, or a capture_form-bound alias like "scratch"),
-  #     followed by zero or more KEYWORD arguments. Values are quoted strings,
-  #     "{{ ... }}" interpolations (evaluated when the button is pressed, so they
-  #     see current state, not render-time state), or "[...]" list literals for a
-  #     multi-valued field such as tags or a multi-select property. "create "
+  #     followed by zero or more KEYWORD arguments. A value takes one of three
+  #     forms, told apart by syntax: a LITERAL string -- a bareword (body=hello)
+  #     or a quoted string (body="hello world"), quoted only when it must contain
+  #     whitespace or a special character; a "{{ ... }}" EXPRESSION, evaluated
+  #     when the button is pressed (so it sees current state, not render-time
+  #     state); or a "[...]" LIST literal for a multi-valued field. "{{ ... }}"
+  #     is the only marker for "evaluate this", so a bareword is always a literal,
+  #     never a variable. Inside a list, COMMA is the sole separator: each item is
+  #     a bareword or quoted literal (or a "{{ }}" expression), whitespace inside
+  #     an item is kept ([New York, NY] is two items, no quotes), and an item is
+  #     quoted only to embed a comma (["a,b", c] is two items). "create "
   #     makes a note; "set" writes fields of the target; "delete" removes it.
   #   - Writes happen ONLY on an explicit user click. Merely viewing a note that
   #     contains a button never mutates anything -- viewing stays safe and
@@ -124,17 +131,49 @@ Feature: Action buttons
     And a second strand with a title derived from "Inbox Item" has body "second"
 
   Scenario: A set action writes several values to a multi-valued field with a list literal
-    # A "[...]" list literal sets a multi-valued field unambiguously, so there is
-    # never a question of whether a comma inside a single quoted value is a
-    # separator -- only the list brackets group multiple values.
+    # A "[...]" list literal sets a multi-valued field. Items are comma-separated
+    # barewords (or quoted strings); the brackets make "list" a property of the
+    # syntax, so a multi-valued write is never confused with a single string and
+    # clean tokens need no per-item quoting.
     Given the property "moods" is defined as multi-select with options "bright, bold, sweet"
     And a note titled "Coffee Brewing" with body "x"
     And a note titled "Tools" with body:
       """
       {% button "Tag moods" %}
-        set "Coffee Brewing" moods=["bright", "sweet"]
+        set "Coffee Brewing" moods=[bright, sweet]
       {% endbutton %}
       """
     And I am viewing the note "Tools"
     When I click the button "Tag moods"
     Then the strand "Coffee Brewing" has property "moods" containing "bright" and "sweet"
+
+  Scenario: A bareword argument value is a literal string
+    # An unquoted value is a literal, exactly like a quoted one. "{{ }}" is the
+    # only marker for an expression, so "body=hello" stores the text "hello", not
+    # the value of a variable named hello.
+    Given a note titled "Tools" with body:
+      """
+      {% button "Make" %}
+        create "Generated" body=hello
+      {% endbutton %}
+      """
+    And I am viewing the note "Tools"
+    When I click the button "Make"
+    Then the strand "Generated" has body "hello"
+
+  Scenario: A list item keeps internal whitespace without being quoted
+    # Comma is the only separator inside "[...]", so whitespace belongs to an item
+    # rather than delimiting it: "[New York, NY]" is two items, not three, and
+    # needs no quotes. (A comma inside a value is the only thing that forces
+    # quoting: "[\"a,b\", c]" is two items.)
+    Given the property "places" is defined as multi-select with options "New York, NY, LA"
+    And a note titled "Coffee Brewing" with body "x"
+    And a note titled "Tools" with body:
+      """
+      {% button "Tag places" %}
+        set "Coffee Brewing" places=[New York, NY]
+      {% endbutton %}
+      """
+    And I am viewing the note "Tools"
+    When I click the button "Tag places"
+    Then the strand "Coffee Brewing" has property "places" containing "New York" and "NY"
